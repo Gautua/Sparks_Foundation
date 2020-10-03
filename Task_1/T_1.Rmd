@@ -1,0 +1,82 @@
+---
+title: "Task_1"
+author: "Gautam Malhotra"
+date: "2 October 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Loading Required Libraries
+```{r}
+library(readr)
+library(caret)
+library(GGally)
+library(dplyr)
+```
+##Downloading data and loading in R
+```{r}
+download.file("https://raw.githubusercontent.com/AdiPersonalWorks/Random/master/student_scores%20-%20student_scores.csv","scores.csv")
+scores<-read.csv("scores.csv")
+
+```
+##Exploring the data
+```{r}
+str(scores)
+ggpairs(scores,columns = 1:2,title = "Scores")
+```
+
+##Creating Train and Test Models
+```{r}
+
+y<-scores$Scores
+test_index<-createDataPartition(y,times=1,p=0.2,list = FALSE)
+train_set<-scores %>% slice(-test_index)
+test_set<-scores %>% slice(test_index)
+
+```
+
+##Fitting a Linear Model to the Train Data
+```{r}
+fit<-train_set %>%  lm(Scores~Hours,data=.)
+y_hat<-predict(fit,test_set)  
+```
+
+##Checking the Residual Mean Squared Error for accuracy
+```{r}
+sqrt(mean((y_hat - test_set$Scores)^2))
+```
+
+
+```{r}
+qplot(y_hat,test_set$Scores)+geom_smooth(method = "lm")
+
+```
+
+##Score for 9.5 Hours per Day
+```{r}
+temp<-data.frame(Hours<-c(9.25))
+predict(fit,temp) 
+```
+
+##Conclusion
+Although the model does provide a good prediction, the RMSE varies due to randomness in partitioning the dataset into Train and Test
+
+```{r}
+N<-1000
+ans<-replicate(N,{
+  y<-scores$Scores
+  test_index<-createDataPartition(y,times=1,p=0.2,list = FALSE)
+  train_set<-scores %>% slice(-test_index)
+  test_set<-scores %>% slice(test_index)
+  fit<-train_set %>%  lm(Scores~Hours,data=.)
+  summary(fit)
+  y_hat<-predict(fit,test_set) %>% round() 
+  sqrt(mean((y_hat - test_set$Scores)^2))
+})
+c("Mean RSME: ",mean(ans))
+c("Standard Deviation of RSME :",sd(ans))
+```

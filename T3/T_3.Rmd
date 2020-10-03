@@ -1,0 +1,63 @@
+---
+title: "Task_3"
+author: "Gautam"
+date: "3 October 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Loading Required Libraries
+```{r}
+library(party)# Decision Tree
+library(gsheet)#Access data from docs
+library(caret)# Partition Data
+library(dplyr)
+```
+
+###Downloading Dataset
+```{r}
+data_set <- gsheet2tbl('https://drive.google.com/open?id= https://docs.google.com/spreadsheets/d/1MrzR-CUDz1h6raJ95jn-heyYy-eNpjKCqu8J5gqbTPk/edit?usp=sharing')
+data_set<-data_set[-1]        #Removing ID column 
+
+```
+###Explatory Analysis
+```{r}
+str(data_set)
+data_set$Species=as.factor(data_set$Species)
+cor(data_set[1:4])
+```
+
+###Splitting into Train and Test
+```{r}
+y<-data_set$Species
+test_index<-createDataPartition(y,times=1,p=0.2,list = F)
+train<-data_set %>% slice(-test_index)
+test<-data_set %>% slice(test_index)
+
+```
+
+###Creating Decision Tree and Plotting
+```{r}
+model<-train %>%  ctree(Species~.,data = .)
+plot(model)
+```
+
+###Predicting
+```{r}
+y_hat<-predict(model,test)
+result<-table(test$Species,y_hat)
+result
+
+```
+
+###Checking Accuracy
+```{r}
+accuracy<- sum(diag(result)) / sum(result) 
+print(paste('Accuracy for test is found to be', accuracy)) 
+```
+
+##Conclusion
+The Model created is highly accurate in predicting the Species of the plant based on the given predictors .

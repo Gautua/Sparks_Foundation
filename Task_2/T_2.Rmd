@@ -1,0 +1,113 @@
+---
+title: "Optimal Clusters"
+author: "Gautam"
+date: "5 October 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##including necessary libraries
+```{r}
+library(gsheet)#Access data from docs
+library(ggplot2)#visualisation
+library(cluster)#Clusterisation
+library(dplyr)
+
+```
+
+##Downloading Dataset
+```{r}
+data_set <- gsheet2tbl('https://drive.google.com/open?id= https://docs.google.com/spreadsheets/d/1MrzR-CUDz1h6raJ95jn-heyYy-eNpjKCqu8J5gqbTPk/edit?usp=sharing')
+data_set<-data_set[-1]        #Removing ID column 
+
+```
+
+###Checking for outliers 
+```{r}
+boxplot(data_set[-5])
+data_set$Species<-as.factor(data_set$Species)
+
+```
+
+###Treating outliers since they affect cluster formation
+```{r}
+
+quant<-quantile(data_set$SepalWidthCm, c(0.05, 0.95), na.rm = TRUE)
+
+data_set<- within(data_set,{SepalWidthCm = ifelse(SepalWidthCm < quant[1], quant[1], SepalWidthCm)
+SepalWidthCm = ifelse(SepalWidthCm > quant[2], quant[2], SepalWidthCm)})
+```
+
+###Re-testing for Outliers
+```{r} 
+boxplot(data_set[-5])
+```
+
+###Scale the data and analyse the principle components
+```{r}
+
+pc<-prcomp(data_set[,-5], center = TRUE,scale. = TRUE)
+summary(pc)
+#Together PC1 and PC2, they explain 95% variation in the dataset .
+```
+
+### Computing WSS from k =1.....15
+```{r}
+
+k.max <- 15
+wss<- sapply(1:k.max, 
+             function(k){kmeans(data_set[,-5], k, nstart=50,iter.max = 15 )$tot.withinss})
+
+```
+
+
+###Plot WSS for Elbow point
+
+```{r}
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total WSS", main="Total WSS")
+abline(v=3)
+#We find the elbow point,optimum number of clusters=3 
+```
+
+###K-means Clustering
+```{r}
+result<-kmeans(data_set[-5],3,iter.max = 100)
+result
+```
+
+
+### Identifying major variabes
+```{r}
+aggregate(data_set[,-5],by=list(result$cluster),FUN=mean)
+## PetalLengthCm PetalWidthCm are responsible since there is significant difference amongst clusters
+
+```
+
+####Corresponding classes and clusters
+```{r}
+temp<-data.frame(cluster=result$cluster,data_set$Species)
+unique(temp)
+```
+
+###Checking Accuracy of clustering
+```{r}
+res<-table(cluster=result$cluster,data_set$Species)
+res
+
+```
+
+###Visualisation of Clusters
+```{r}
+clusplot(data_set[,-5], result$cluster,color=T,shade = T, labels=4,lines=0,main="Clusterplot ",cex=1)
+
+```
+
+
+##Conclusion
+According to the Elbow point method (WSS) , the optimal number of clusters was found to be 3.

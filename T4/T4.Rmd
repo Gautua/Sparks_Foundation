@@ -1,0 +1,138 @@
+---
+title: "Task4"
+author: "Gautam"
+date: "20/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Loading Required Libraries
+```{r}
+library(quantmod)
+library(tseries)
+library(timeSeries)
+library(forecast)
+library(xts)
+```
+
+#Obtaining historical stock prices prices yahoo finance from 1998 to current date
+```{r}
+getSymbols('^BSESN',from="1998-01-01",to="2020-10-20")
+
+class(BSESN)
+
+```
+
+#PACF<-P value ACF<-Q Value
+```{r}
+Sensex<-BSESN[,4]
+Sensex<-na.approx(Sensex)
+par(mfrow=c(1,1))
+plot(Sensex)
+par(mfrow=c(1,2))
+Acf(Sensex,main="ACF for Differenced Series")
+Pacf(Sensex,main="PACF for Differenced Series")
+
+```
+
+
+```{r}
+print(adf.test(Sensex))
+auto.arima(Sensex,seasonal = F)
+```
+
+
+```{r}
+fitA<-auto.arima(Sensex,seasonal = F)
+tsdisplay(residuals(fitA),lag.max = 40,main = "(0,1,0) Model Residuals")
+
+```
+
+
+```{r}
+fitB<-arima(Sensex,order = c(0,1,17))
+tsdisplay(residuals(fitB),lag.max = 40,main = "(0,1,18) Model Residuals")
+```
+
+
+```{r}
+fitD<-arima(Sensex,order = c(1,1,1))
+tsdisplay(residuals(fitD),lag.max = 40,main = "(1,1,1) Model Residuals")
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+term<-100
+```
+
+
+```{r}
+fcast1<-forecast(fitA,h=term)
+plot(fcast1)
+```
+
+
+```{r}
+fcast2<-forecast(fitB,h=term)
+plot(fcast2)
+```
+
+```{r}
+fcast4<-forecast(fitD,h=term)
+plot(fcast4)
+```
+
+```{r}
+accuracy(fcast1)
+accuracy(fcast2)
+accuracy(fcast4)
+
+```
+
+
+```{r}
+term<-45
+
+fcast1<-forecast(fitA,h=term)
+plot(fcast1)
+
+fcast2<-forecast(fitB,h=term)
+plot(fcast2)
+
+
+
+fcast4<-forecast(fitD,h=term)
+plot(fcast4)
+
+#Check Accuracy of the forecasts
+accuracy(fcast1)
+accuracy(fcast2)
+
+accuracy(fcast4)
+```
+
+
+```{r}
+
+term<-365
+
+fcast1<-forecast(fitA,h=term)
+plot(fcast1)
+
+fcast2<-forecast(fitB,h=term)
+plot(fcast2)
+
+
+fcast4<-forecast(fitD,h=term)
+plot(fcast4)
+
+#Check Accuracy of the forecasts
+accuracy(fcast1)
+accuracy(fcast2)
+accuracy(fcast4)
+```
+

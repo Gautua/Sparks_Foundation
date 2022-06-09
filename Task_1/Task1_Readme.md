@@ -1,7 +1,10 @@
 
 # Supervised Learning in R
 
-Prediction using Supervised ML
+Dataset - Scores
 
-Predict the percentage of marks of an student based on the number of
-study hours.
+#### Task:
+
+* Perform a Linear Regression on the given data 
+
+* Predict the scores obtained for particular study hours

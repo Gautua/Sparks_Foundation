@@ -1,6 +1,11 @@
 
 # Prediction using Unsupervised ML - R
 
-Clustering performed on Iris dataset 
+Dataset - Iris
 
-Using K-means clustering
+#### Task:
+
+* Use Unsupervised Learning to cluster the observations (K-means)
+
+* Classify new observations accordingly
+
